@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6FCFE"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/editText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:text="Список медикаментов"
+                android:textColor="#8080FF"
+                android:textSize="54px"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.107"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.035" />
+
+            <ListView
+                android:id="@+id/medicalSuppliesList"
+                android:layout_width="250dp"
+                android:layout_height="300dp"
+                android:background="@drawable/customslist"
+                android:choiceMode="multipleChoice"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editText" />
+            <TextView
+                android:id="@+id/nameMedicalSuppliesTitlefil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:text="Поиск по списку"
+                android:textColor="#8080FF"
+                android:textSize="54px"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="parent" />
+
+            <EditText
+                android:id="@+id/nameMedicalSupplies_filtr"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:background="@drawable/customtextbox"
+                android:gravity="center"
+                android:textColor="#8080FF"
+                android:layout_gravity="center"
+                android:textSize="54px"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_weight="4"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <Button
+                android:id="@+id/filtr"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="25dp"
+                android:text="Поиск"
+                android:layout_gravity="center"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+
+
+            <Button
+                android:id="@+id/buttonSelectAll"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="25dp"
+                android:text="Выбрать все"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/addbutton" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/buttonCancel"
+                    android:layout_width="113dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="25dp"
+                    android:layout_marginRight="25dp"
+                    android:text="Сбросить"
+                    android:textSize="6pt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonSelectAll" />
+
+                <Button
+                    android:id="@+id/buttonInput"
+                    android:layout_width="113dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="25dp"
+                    android:text="Вывести"
+                    android:textSize="6pt"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/buttonCancel"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonSelectAll" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/buttonAddfragment"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="25dp"
+                android:text="Добавить"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent" />
+            <Button
+                android:id="@+id/buttonDeletefragment"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="25dp"
+                android:text="Удалить"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent" />
+
+            <Button
+                android:id="@+id/buttonEditfragment"
+                android:layout_width="250dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="25dp"
+                android:text="Редактировать"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent" />
+
+            <FrameLayout
+                android:id="@+id/fragmentAdd"
+                android:layout_width="match_parent"
+                android:layout_height="410dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
