@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,6 +15,10 @@ import android.util.SparseBooleanArray;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.RemoteViews;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.view.View;
@@ -42,6 +48,44 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //синхронизация
+        {
+            ElementDBStorage dbElements = new ElementDBStorage(this);
+            FileElementStorage fileElements = new FileElementStorage(this);
+            List<ElementModel> dbElem = dbElements.getFullList();
+            List<ElementModel> fileElem = fileElements.getFullList();
+            List<ElementModel> inDb = new ArrayList<>();
+            List<ElementModel> inFile = new ArrayList<>();
+            for (int i = 0; i < fileElem.size(); ++i){
+                boolean fl = false;
+                for (int j = 0; j < dbElem.size(); ++j) {
+                    if (Objects.equals(fileElem.get(i).Name, dbElem.get(j).Name)) {
+                        fl = true;
+                    }
+                }
+                if (!fl){
+                    inDb.add(fileElem.get(i));
+                }
+            }
+            for (int i = 0; i < dbElem.size(); ++i){
+                boolean fl = false;
+                for (int j = 0; j < fileElem.size(); ++j) {
+                    if (Objects.equals(fileElem.get(j).Name, dbElem.get(i).Name)) {
+                        fl = true;
+                    }
+                }
+                if (!fl){
+                    inFile.add(dbElem.get(i));
+                }
+            }
+            for (int i = 0; i < inDb.size(); ++i){
+                dbElements.insert(inDb.get(i));
+            }
+            for (int i = 0; i < inFile.size(); ++i){
+                fileElements.insert(inFile.get(i));
+            }
+        }
+
         SharedPreferences sPref = getSharedPreferences("settings", MODE_PRIVATE);
         if (sPref.contains("saveMode")){
             String saveMode = sPref.getString("saveMode", "");
@@ -62,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
 
         //Удаление выбранных элементов
         Button btnDeletefragment = findViewById(R.id.buttonDeletefragment);
+        Context context = this;
         btnDeletefragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,6 +121,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
                 }
                 elementList.clearChoices();
                 adapter.notifyDataSetChanged();
+
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget);
+                ComponentName thisWidget = new ComponentName(context, Widget.class);
+                remoteViews.setTextViewText(R.id.textViewWidgetText, "Записей в БД:" + Integer.toString(elementStorage.getFullList().size()));
+                appWidgetManager.updateAppWidget(thisWidget, remoteViews);
             }
         });
 
@@ -134,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
         //adapter.add(s);
         elementStorage.insert(new ElementModel(s));
         adapter.notifyDataSetChanged();
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget);
+        ComponentName thisWidget = new ComponentName(context, Widget.class);
+        remoteViews.setTextViewText(R.id.textViewWidgetText, "Записей в БД:" + Integer.toString(elementStorage.getFullList().size()));
+        appWidgetManager.updateAppWidget(thisWidget, remoteViews);
     }
 
     //Редактирование элемента из списка
