@@ -4,8 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.sax.Element;
+import android.util.SparseBooleanArray;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,87 +18,64 @@ import android.widget.ListView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.myapplication.BD.ElementDBStorage;
+import com.example.myapplication.File.FileElementStorage;
+import com.example.myapplication.Interface.IElementStorage;
+import com.example.myapplication.Logic.ElementLogic;
+import com.example.myapplication.Models.ElementModel;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.AddElementEvent, EditFragment.EditElementEvent {
 
-    ArrayList<String> users = new ArrayList<String>();
-    ArrayList<String> selectedUsers = new ArrayList<String>();
-    ArrayAdapter<String> adapter;
-    ListView usersList;
+    static IElementStorage elementStorage;
+    ArrayAdapter<ElementModel> adapter;
+    ListView elementList;
     AddFragment addFragment = new AddFragment();
     EditFragment editFragment = new EditFragment();
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putStringArrayList("list", users);
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
-            users = savedInstanceState.getStringArrayList("list");
-        }
         setContentView(R.layout.activity_main);
 
-
-        //Список
-        // получаем элемент ListView
-        usersList = findViewById(R.id.medicalSuppliesList);
-        // создаем адаптер
-        adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_multiple_choice, users);
-        // устанавливаем для списка адаптер
-        usersList.setAdapter(adapter);
-
-        // обработка установки и снятия отметки в списке
-        usersList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id)
-            {
-                // получаем нажатый элемент
-                String user = adapter.getItem(position);
-                if(usersList.isItemChecked(position))
-                    selectedUsers.add(user);
-                else
-                    selectedUsers.remove(user);
+        SharedPreferences sPref = getSharedPreferences("settings", MODE_PRIVATE);
+        if (sPref.contains("saveMode")){
+            String saveMode = sPref.getString("saveMode", "");
+            if (Objects.equals(saveMode, "DBMobile")){
+                elementStorage = new ElementDBStorage(this);
             }
-        });
+            if (Objects.equals(saveMode, "Files")){
+                elementStorage = new FileElementStorage(this);
+            }
+        }
+        else{
+            elementStorage = new FileElementStorage(this);
+        }
+        elementList = findViewById(R.id.medicalSuppliesList);
+        adapter = new ArrayAdapter<ElementModel>(this,android.R.layout.simple_list_item_multiple_choice, elementStorage.getFullList());
+        elementList.setAdapter(adapter);
+        elementList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         //Удаление выбранных элементов
         Button btnDeletefragment = findViewById(R.id.buttonDeletefragment);
         btnDeletefragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                remove(view);
-            }
-        });
-
-        //Выбрать все элементы
-        Button btnSelectAll = findViewById(R.id.buttonSelectAll);
-        btnSelectAll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectedUsers.clear();
-                for(int i = 0; i < users.size(); i++){
-                    usersList.setItemChecked(i,true);
-                    String user = adapter.getItem(i);
-                    selectedUsers.add(user);
+                SparseBooleanArray sparseBooleanArray  = elementList.getCheckedItemPositions();
+                int len = elementList.getCount();
+                for(int i = 0; i < len; i++)
+                {
+                    if(sparseBooleanArray.get(i) == true)
+                    {
+                        elementStorage.delete(adapter.getItem(i));
+                    }
                 }
-            }
-        });
-
-        //Отменить выбор всех элементов
-        Button btnCancel = findViewById(R.id.buttonCancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectedUsers.clear();
-                for(int i = 0; i < users.size(); i++){
-                    usersList.setItemChecked(i,false);
-                }
+                elementList.clearChoices();
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -104,8 +85,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
             @Override
             public void onClick(View view) {
                 String s ="";
-                for(int i = 0; i < selectedUsers.size(); i++){
-                    s = s + selectedUsers.get(i) + " , ";
+                for(int i = 0; i < elementList.getCount(); i++){
+                    s = s + elementList.getItemAtPosition(i).toString() + " , ";
                 }
                 Toast toast = Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT);
                 toast.show();
@@ -132,22 +113,11 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
             }
         });
 
-        //Новая активити и поиск элемента
-        ArrayList<String> find_list = new ArrayList<String>(); //отобранные значения
-        Button btnActivityFiltr = findViewById(R.id.filtr);
-        EditText name_search = findViewById(R.id.nameMedicalSupplies_filtr);
-        btnActivityFiltr.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                for (String item : users) {
-                    if (item.startsWith(name_search.getText().toString())) {
-                        find_list.add(item);
-                    }
-                }
-                    Intent intent = new Intent(MainActivity.this, ResActivity.class);
-                    intent.putExtra("findItems", find_list);
-                    startActivity(intent);
-            }
+        //Настройки
+        Button btnSettings = findViewById(R.id.buttonSetting);
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
         });
 
 
@@ -161,42 +131,25 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEl
 
     //Добавление элементов в список
     public void addEvent(String s){
-        adapter.add(s);
-        adapter.notifyDataSetChanged();
-    }
-
-    public void remove(View view){
-        // получаем и удаляем выделенные элементы
-        for(int i=0; i< selectedUsers.size();i++){
-            adapter.remove(selectedUsers.get(i));
-        }
-        // снимаем все ранее установленные отметки
-        usersList.clearChoices();
-        // очищаем массив выбраных объектов
-        selectedUsers.clear();
-
+        //adapter.add(s);
+        elementStorage.insert(new ElementModel(s));
         adapter.notifyDataSetChanged();
     }
 
     //Редактирование элемента из списка
     public void editEvent(String s){
-        int k = 0;
-        String name_elem = "";
-        for(int i = 0; i < selectedUsers.size(); i++){
-            k = k + 1;
-            name_elem = selectedUsers.get(i);
+        ElementModel pr = new ElementModel(s);
+        SparseBooleanArray sparseBooleanArray  = elementList.getCheckedItemPositions();
+        for(int i = 0; i < elementList.getCount(); i++)
+        {
+            if(sparseBooleanArray.get(i) == true)
+            {
+                pr.Id = adapter.getItem(i).Id;
+                elementStorage.update(pr);
+                Toast.makeText(getApplicationContext(), "Успешно", Toast.LENGTH_LONG).show();
+            }
         }
-        if (k == 0){
-            Toast.makeText(getApplicationContext(), "Выберите элемент", Toast.LENGTH_LONG).show();
-        }
-        else if(k != 1){
-            Toast.makeText(getApplicationContext(), "Выберите только один элемент из списка", Toast.LENGTH_LONG).show();
-        }
-        else{
-            int index = users.indexOf(name_elem);
-            users.set(index,s);
-            Toast.makeText(getApplicationContext(), "Успешно", Toast.LENGTH_LONG).show();
-        }
+
         adapter.notifyDataSetChanged();
     }
 
